@@ -1,0 +1,19 @@
+{
+  "name": "@kgentic/policies-mcp",
+  "version": "0.1.0",
+  "private": false,
+  "description": "MCP server for AI coding agent policies",
+  "type": "module",
+  "main": "./dist/index.js",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@kgentic/policies-shared": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.27.0"
+  }
+}
