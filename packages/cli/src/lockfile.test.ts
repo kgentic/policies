@@ -1,8 +1,17 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { join } from 'node:path';
-import { tmpdir } from 'node:os';
-import { readLockfile, writeLockfile, addPolicy, removePolicy, findPolicy } from './lockfile.js';
+import { tmpdir, homedir } from 'node:os';
+import {
+  readLockfile,
+  writeLockfile,
+  addPolicy,
+  removePolicy,
+  findPolicy,
+  resolveLockfilePath,
+  getGlobalLockfilePath,
+  getProjectLockfilePath,
+} from './lockfile.js';
 import type { InstalledPolicy, PolicyLockfile } from '@kgentic/policies-shared';
 
 const makePolicy = (name: string): InstalledPolicy => ({
@@ -26,18 +35,44 @@ describe('readLockfile', () => {
   });
 
   it('returns empty lockfile when file does not exist', async () => {
-    const lockfile = await readLockfile(tmpDir);
+    const lockfilePath = getProjectLockfilePath(tmpDir);
+    const lockfile = await readLockfile(lockfilePath);
     expect(lockfile).toEqual({ version: 1, policies: [] });
   });
 
   it('round-trips write then read correctly', async () => {
     const policy = makePolicy('security-baseline');
     const original: PolicyLockfile = { version: 1, policies: [policy] };
+    const lockfilePath = getProjectLockfilePath(tmpDir);
 
-    await writeLockfile(tmpDir, original);
-    const loaded = await readLockfile(tmpDir);
+    await writeLockfile(lockfilePath, original);
+    const loaded = await readLockfile(lockfilePath);
 
     expect(loaded).toEqual(original);
+  });
+});
+
+describe('resolveLockfilePath', () => {
+  it('returns global lockfile path for scope=global', () => {
+    const result = resolveLockfilePath('global', '/some/project');
+    expect(result).toBe(join(homedir(), '.config', 'kgentic', 'policies.lock.json'));
+  });
+
+  it('returns project lockfile path for scope=project', () => {
+    const result = resolveLockfilePath('project', '/some/project');
+    expect(result).toBe(join('/some/project', 'policies.lock.json'));
+  });
+
+  it('global path is under home directory', () => {
+    const result = getGlobalLockfilePath();
+    expect(result.startsWith(homedir())).toBe(true);
+  });
+
+  it('project path is under projectDir', () => {
+    const projectDir = '/tmp/my-project';
+    const result = getProjectLockfilePath(projectDir);
+    expect(result.startsWith(projectDir)).toBe(true);
+    expect(result.endsWith('policies.lock.json')).toBe(true);
   });
 });
 
