@@ -1,7 +1,10 @@
-import { readLockfile, writeLockfile, removePolicy, findPolicy } from '../lockfile.js';
-import { getAdapter, type ClientName } from '../adapters/index.js';
+import { readLockfile, writeLockfile, removePolicy, findPolicy, resolveLockfilePath } from '../lockfile.js';
+import { getAdapter, isClientName, type ClientName } from '../adapters/index.js';
 
-export async function run(args: string[], options: { client: ClientName }): Promise<void> {
+export async function run(
+  args: string[],
+  options: { client: ClientName; scope?: 'global' | 'project' },
+): Promise<void> {
   const policyName = args[0];
 
   if (!policyName) {
@@ -9,20 +12,23 @@ export async function run(args: string[], options: { client: ClientName }): Prom
   }
 
   const projectDir = process.cwd();
-  const lockfile = await readLockfile(projectDir);
+  const scope = options.scope ?? 'project';
+  const lockfilePath = resolveLockfilePath(scope, projectDir);
+  const lockfile = await readLockfile(lockfilePath);
   const existing = findPolicy(lockfile, policyName);
 
   if (!existing) {
     throw new Error(`Policy "${policyName}" is not installed.`);
   }
 
-  // Remove files via adapter
-  const adapter = getAdapter((existing.client as ClientName) || options.client);
+  // Remove files via adapter — prefer client stored in lockfile, fall back to CLI flag
+  const clientName = isClientName(existing.client) ? existing.client : options.client;
+  const adapter = getAdapter(clientName);
   await adapter.remove(projectDir, existing.rules);
 
   // Update lockfile
   const updated = removePolicy(lockfile, policyName);
-  await writeLockfile(projectDir, updated);
+  await writeLockfile(lockfilePath, updated);
 
   console.log(`✓ Removed ${policyName}`);
 }

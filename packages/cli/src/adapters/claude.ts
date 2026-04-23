@@ -1,5 +1,6 @@
 import { mkdir, writeFile, rm } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
+import { homedir } from 'node:os';
 
 export interface AdapterInstallResult {
   client: 'claude';
@@ -7,12 +8,24 @@ export interface AdapterInstallResult {
   filesWritten: string[];
 }
 
+export function resolveRulesDir(
+  scope: 'global' | 'project',
+  projectDir: string,
+  policyName: string,
+): string {
+  if (scope === 'global') {
+    return join(homedir(), '.claude', 'rules', policyName);
+  }
+  return join(projectDir, '.claude', 'rules', policyName);
+}
+
 export async function install(
   projectDir: string,
   policyName: string,
   files: Map<string, string>,
+  scope: 'global' | 'project' = 'project',
 ): Promise<AdapterInstallResult> {
-  const rulesDir = join(projectDir, '.claude', 'rules', policyName);
+  const rulesDir = resolveRulesDir(scope, projectDir, policyName);
   await mkdir(rulesDir, { recursive: true });
 
   const filesWritten: string[] = [];

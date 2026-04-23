@@ -1,8 +1,8 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { mkdtemp, rm, readFile, mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
-import { tmpdir } from 'node:os';
-import { install, remove } from './claude.js';
+import { tmpdir, homedir } from 'node:os';
+import { install, remove, resolveRulesDir } from './claude.js';
 
 let tempDir: string | undefined;
 
@@ -176,5 +176,54 @@ describe('install with nested project dir', () => {
     expect(result.filesWritten).toHaveLength(1);
     const content = await readFile(result.filesWritten[0] as string, 'utf-8');
     expect(content).toBe('hello');
+  });
+});
+
+describe('resolveRulesDir', () => {
+  it('returns project-scoped path by default', () => {
+    const projectDir = '/tmp/my-project';
+    const result = resolveRulesDir('project', projectDir, 'swe-essentials');
+    expect(result).toBe(join(projectDir, '.claude', 'rules', 'swe-essentials'));
+  });
+
+  it('returns global path under home directory', () => {
+    const projectDir = '/tmp/my-project';
+    const result = resolveRulesDir('global', projectDir, 'swe-essentials');
+    expect(result).toBe(join(homedir(), '.claude', 'rules', 'swe-essentials'));
+  });
+
+  it('global path does not include projectDir', () => {
+    const projectDir = '/tmp/my-project';
+    const result = resolveRulesDir('global', projectDir, 'swe-essentials');
+    expect(result.includes(projectDir)).toBe(false);
+  });
+});
+
+describe('install with global scope', () => {
+  it('installs to project scope by default (no scope arg)', async () => {
+    const projectDir = await createTempDir();
+    const files = new Map([['rule.md', 'content']]);
+
+    const result = await install(projectDir, 'my-policy', files);
+
+    expect(result.rulesDir).toBe(join(projectDir, '.claude', 'rules', 'my-policy'));
+  });
+
+  it('installs to project .claude/rules when scope=project', async () => {
+    const projectDir = await createTempDir();
+    const files = new Map([['rule.md', 'content']]);
+
+    const result = await install(projectDir, 'my-policy', files, 'project');
+
+    expect(result.rulesDir).toBe(join(projectDir, '.claude', 'rules', 'my-policy'));
+  });
+
+  it('installs to ~/.claude/rules when scope=global', async () => {
+    const projectDir = await createTempDir();
+    const files = new Map<string, string>();
+
+    const result = await install(projectDir, 'my-policy', files, 'global');
+
+    expect(result.rulesDir).toBe(join(homedir(), '.claude', 'rules', 'my-policy'));
   });
 });
