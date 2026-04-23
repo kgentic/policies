@@ -1,0 +1,20 @@
+name: security-baseline
+version: 1.0.0
+description: Security-focused rules for code review — secrets hygiene, injection prevention, auth checks, dependency hygiene, and error exposure
+tags: [security, baseline, universal]
+rules:
+  - id: secrets-detection
+    path: secrets-detection.md
+    description: Secrets detection and protection
+  - id: injection-prevention
+    path: injection-prevention.md
+    description: Injection attack prevention
+  - id: auth-checks
+    path: auth-checks.md
+    description: Authentication and authorization checks
+  - id: dependency-hygiene
+    path: dependency-hygiene.md
+    description: Dependency hygiene and security
+  - id: error-exposure
+    path: error-exposure.md
+    description: Error exposure prevention

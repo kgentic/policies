@@ -1,0 +1,20 @@
+name: swe-essentials
+version: 1.2.0
+description: Core software engineering principles — design, discipline, testing, error handling, security
+tags: [quality, swe, universal]
+rules:
+  - id: design
+    path: design.md
+    description: Design principles
+  - id: code-discipline
+    path: code-discipline.md
+    description: Code discipline and consistency
+  - id: testing
+    path: testing.md
+    description: Testing practices
+  - id: error-handling
+    path: error-handling.md
+    description: Error handling patterns
+  - id: security
+    path: security.md
+    description: Security fundamentals
