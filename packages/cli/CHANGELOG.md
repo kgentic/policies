@@ -1,5 +1,11 @@
 # @kgentic-ai/policies
 
+## 0.3.0
+
+### Minor Changes
+
+- f238d91: feat: add local filesystem source support for policy installation
+
 ## 0.2.0
 
 ### Minor Changes
