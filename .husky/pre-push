@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Recursion guard — prevents re-entry when `gah push` pushes
+if [ "${GAH_ACTIVE:-}" = "yes" ]; then
+  exit 0
+fi
+
+# Opt-in check — .gahrc must exist (cosmiconfig config = opt-in signal)
+if [ ! -f ".gahrc" ] && [ ! -f ".gahrc.json" ] && [ ! -f ".gahrc.yaml" ] && [ ! -f ".gahrc.yml" ]; then
+  exit 0
+fi
+
+# Delegate to `gah push` which handles rewrite + push in one step.
+# `gah push` sets GAH_ACTIVE=yes before its own push, so this hook
+# will skip on re-entry (recursion guard above).
+#
+# If gah push succeeds, we exit 1 to abort the original push (git
+# caches local refs before hooks, so the original would push stale SHAs).
+# If nothing needed rewriting, we exit 0 to let git push normally.
+
+BRANCH=$(git branch --show-current)
+
+# Check if push should be blocked during work hours
+BLOCK_CHECK=$(gah check-hours 2>&1) || true
+if echo "$BLOCK_CHECK" | grep -q "BLOCKED"; then
+  echo "$BLOCK_CHECK" | grep -v "BLOCKED"
+  exit 1
+fi
+
+# Quick check: any unpushed work-hour commits?
+OUTPUT=$(gah --unpushed --dry-run 2>&1) || true
+
+if echo "$OUTPUT" | grep -q "commits to modify: 0"; then
+  # Nothing to rewrite — let the original push proceed
+  exit 0
+fi
+
+# Work-hour commits found — hand off to `gah push`
+echo "gah: work-hour commits detected — rewriting before push"
+gah push --branch "$BRANCH"
+
+echo ""
+echo "✓ gah: push complete (timestamps shifted to outside work hours)"
+echo "ℹ gah: exit 1 is expected — original push replaced by gah push"
+
+# Abort the original push — gah push already landed the rewritten version.
+exit 1
