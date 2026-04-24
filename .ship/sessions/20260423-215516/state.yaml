@@ -1,0 +1,12 @@
+session_id: "20260423-215516"
+idea: "session auto-created by ship-event-logger hook"
+command: auto-detected
+current_phase: 0
+mode: brownfield
+cost_tracking:
+  budget: null
+  spent_actual: 0.00
+  breakdown: {}
+  warnings_issued: []
+phases_completed: []
+custom_command_data: {}

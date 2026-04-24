@@ -1,0 +1,21 @@
+{
+  "name": "@kgentic/policies-plugin-claude",
+  "version": "0.1.0",
+  "private": false,
+  "description": "Claude Code plugin for policy enforcement",
+  "type": "module",
+  "main": "./dist/index.js",
+  "files": ["dist", ".claude-plugin"],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@kgentic/policies-shared": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.27.0",
+    "yaml": "^2.8.1",
+    "zod": "^3.25.1"
+  }
+}

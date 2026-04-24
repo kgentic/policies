@@ -10,3 +10,5 @@ export {
   installedPolicySchema,
   policyLockfileSchema,
 } from './schema.js';
+
+export * from './engine/index.js';
