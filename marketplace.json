@@ -1,0 +1,19 @@
+{
+  "name": "kgentic",
+  "owner": {
+    "name": "kgentic",
+    "email": "support@kgentic.ai"
+  },
+  "plugins": [
+    {
+      "name": "policy",
+      "source": "./packages/plugin-claude",
+      "description": "Policy enforcement engine for Claude Code — hook-based rule evaluation, approval tracking, and MCP tools",
+      "version": "0.2.0",
+      "author": {
+        "name": "kgentic"
+      },
+      "keywords": ["policy", "guardrails", "governance", "hooks", "enforcement"]
+    }
+  ]
+}
