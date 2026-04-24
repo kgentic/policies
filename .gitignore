@@ -6,3 +6,7 @@ dist/
 *.lock
 !pnpm-lock.yaml
 .gahrc
+.index.db
+.index.db-shm
+.index.db-wal
+.policy/
