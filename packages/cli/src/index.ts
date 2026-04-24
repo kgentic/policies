@@ -60,15 +60,21 @@ async function main(): Promise<void> {
       await run(commandArgs, { client, scope });
       break;
     }
+    case 'validate': {
+      const { run } = await import('./commands/validate.js');
+      await run(commandArgs);
+      break;
+    }
     case '--help':
     case '-h':
     case undefined:
       console.log('Usage: policies <command> [options]');
       console.log('');
       console.log('Commands:');
-      console.log('  add <source> <policy-name>   Install a policy from a GitHub repo');
+      console.log('  add <source> <policy-name>   Install a policy from a GitHub repo or local path');
       console.log('  list                         List installed policies');
       console.log('  remove <policy-name>         Remove an installed policy');
+      console.log('  validate [dir]               Validate a policy.yaml and check rule files');
       console.log('');
       console.log('Options:');
       console.log('  --client <name>              Target client (claude|cursor|windsurf, default: claude)');
