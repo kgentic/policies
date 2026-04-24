@@ -2,7 +2,7 @@ import { fetchPolicy } from '../github.js';
 import { getAdapter, type ClientName } from '../adapters/index.js';
 import { readLockfile, writeLockfile, addPolicy, resolveLockfilePath } from '../lockfile.js';
 import { parseSource } from '../source-parser.js';
-import type { InstalledPolicy } from '@kgentic/policies-shared';
+import type { InstalledPolicy } from '@kgentic-ai/policies-shared';
 import { join } from 'node:path';
 
 export async function run(

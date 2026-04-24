@@ -1,5 +1,5 @@
 import { parse as parseYaml } from 'yaml';
-import { policyManifestSchema, type PolicyManifest } from '@kgentic/policies-shared';
+import { policyManifestSchema, type PolicyManifest } from '@kgentic-ai/policies-shared';
 
 export function buildRawUrl(
   source: string,

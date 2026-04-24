@@ -1,5 +1,5 @@
 {
-  "name": "@kgentic/policies",
+  "name": "@kgentic-ai/policies",
   "version": "0.1.0",
   "private": false,
   "description": "CLI for managing AI coding agent policies",
@@ -16,7 +16,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@kgentic/policies-shared": "workspace:*",
+    "@kgentic-ai/policies-shared": "workspace:*",
     "yaml": "^2.8.1"
   },
   "devDependencies": {

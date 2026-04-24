@@ -41,7 +41,7 @@ importers:
 
   packages/cli:
     dependencies:
-      '@kgentic/policies-shared':
+      '@kgentic-ai/policies-shared':
         specifier: workspace:*
         version: link:../shared
       yaml:
@@ -54,7 +54,7 @@ importers:
 
   packages/mcp:
     dependencies:
-      '@kgentic/policies-shared':
+      '@kgentic-ai/policies-shared':
         specifier: workspace:*
         version: link:../shared
       '@modelcontextprotocol/sdk':
@@ -63,7 +63,7 @@ importers:
 
   packages/plugin-claude:
     dependencies:
-      '@kgentic/policies-shared':
+      '@kgentic-ai/policies-shared':
         specifier: workspace:*
         version: link:../shared
       '@modelcontextprotocol/sdk':

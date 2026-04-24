@@ -1,5 +1,5 @@
 {
-  "name": "@kgentic/policies-plugin-claude",
+  "name": "@kgentic-ai/policies-plugin-claude",
   "version": "0.1.0",
   "private": false,
   "description": "Claude Code plugin for policy enforcement",
@@ -13,7 +13,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@kgentic/policies-shared": "workspace:*",
+    "@kgentic-ai/policies-shared": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.27.0",
     "yaml": "^2.8.1",
     "zod": "^3.25.1"

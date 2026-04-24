@@ -12,7 +12,7 @@ import {
   getGlobalLockfilePath,
   getProjectLockfilePath,
 } from './lockfile.js';
-import type { InstalledPolicy, PolicyLockfile } from '@kgentic/policies-shared';
+import type { InstalledPolicy, PolicyLockfile } from '@kgentic-ai/policies-shared';
 
 const makePolicy = (name: string): InstalledPolicy => ({
   name,

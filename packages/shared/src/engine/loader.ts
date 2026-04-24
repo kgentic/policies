@@ -314,9 +314,11 @@ export async function loadPolicyManifestFromDir(input: { startDir: string }): Pr
 
   // If only one layer, use the direct path loader (preserves exact existing behavior)
   if (layerPaths.length === 1) {
-    const only = layerPaths[0];
-    // only is guaranteed to exist since length is 1
-    return loadPolicyManifestFromPath(only!.path);
+    const singleLayer = layerPaths[0];
+    if (!singleLayer) {
+      throw new Error('Expected at least one layer path');
+    }
+    return loadPolicyManifestFromPath(singleLayer.path);
   }
 
   // Multi-layer: load all layers, merge, validate
@@ -349,10 +351,13 @@ export async function loadPolicyManifestFromDir(input: { startDir: string }): Pr
 
   // Use project layer dir for asset resolution (or user layer if no project)
   const projectLayer = layers.find(l => l.source === 'project');
-  const primaryLayer = projectLayer ?? layers[layers.length - 1];
-  // primaryLayer is guaranteed since we checked layerPaths.length > 0
-  const manifestDir = path.dirname(primaryLayer!.sourcePath);
-  const manifestPath = primaryLayer!.sourcePath;
+  const lastLayer = layers[layers.length - 1];
+  const primaryLayer = projectLayer ?? lastLayer;
+  if (!primaryLayer) {
+    throw new Error('No layers available for asset resolution');
+  }
+  const manifestDir = path.dirname(primaryLayer.sourcePath);
+  const manifestPath = primaryLayer.sourcePath;
 
   ensureUniqueIds(manifest);
   const assets = buildAssets(manifestDir, manifest);
