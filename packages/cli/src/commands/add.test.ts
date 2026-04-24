@@ -73,7 +73,7 @@ describe('add command', () => {
     const policy = lockfile.policies[0];
     expect(policy.name).toBe('test-policy');
     expect(policy.version).toBe('1.0.0');
-    expect(policy.source).toBe('kgentic/policies');
+    expect(policy.source).toBe('kgentic/policies@main');
     expect(policy.client).toBe('claude');
     expect(policy.rules).toHaveLength(2);
     expect(policy.rules[0].id).toBe('no-any');
