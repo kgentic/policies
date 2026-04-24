@@ -1,11 +1,13 @@
 {
   "name": "@kgentic-ai/policies-mcp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": false,
   "description": "MCP server for AI coding agent policies",
   "type": "module",
   "main": "./dist/index.js",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",

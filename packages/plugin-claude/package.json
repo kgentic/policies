@@ -1,11 +1,14 @@
 {
   "name": "@kgentic-ai/policies-plugin-claude",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": false,
   "description": "Claude Code plugin for policy enforcement",
   "type": "module",
   "main": "./dist/index.js",
-  "files": ["dist", ".claude-plugin"],
+  "files": [
+    "dist",
+    ".claude-plugin"
+  ],
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
