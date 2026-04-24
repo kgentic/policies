@@ -7,7 +7,7 @@ import {
   loadPolicyManifestFromDir,
   discoverPolicyManifestPath,
   type ResolvedManifest,
-} from '@kgentic/policies-shared';
+} from '@kgentic-ai/policies-shared';
 
 export interface HttpBridgeOptions {
   workspaceRoot: string;

@@ -1,5 +1,5 @@
 {
-  "name": "@kgentic/policies-mcp",
+  "name": "@kgentic-ai/policies-mcp",
   "version": "0.1.0",
   "private": false,
   "description": "MCP server for AI coding agent policies",
@@ -13,7 +13,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@kgentic/policies-shared": "workspace:*",
+    "@kgentic-ai/policies-shared": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.27.0"
   }
 }

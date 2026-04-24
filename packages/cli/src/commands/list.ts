@@ -1,5 +1,5 @@
 import { readLockfile, resolveLockfilePath } from '../lockfile.js';
-import type { PolicyLockfile } from '@kgentic/policies-shared';
+import type { PolicyLockfile } from '@kgentic-ai/policies-shared';
 
 function printLockfile(lockfile: PolicyLockfile, label: string): void {
   if (lockfile.policies.length === 0) {

@@ -1,7 +1,7 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 import { homedir } from 'node:os';
-import { policyLockfileSchema, type PolicyLockfile, type InstalledPolicy } from '@kgentic/policies-shared';
+import { policyLockfileSchema, type PolicyLockfile, type InstalledPolicy } from '@kgentic-ai/policies-shared';
 
 const LOCKFILE_NAME = 'policies.lock.json';
 

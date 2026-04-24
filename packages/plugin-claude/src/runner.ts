@@ -15,7 +15,7 @@ import {
   evaluatePolicy,
   resolveStopDecision,
   type ResolvedManifest,
-} from '@kgentic/policies-shared';
+} from '@kgentic-ai/policies-shared';
 
 function isMissingPolicyFile(error: unknown): boolean {
   return error instanceof Error && 'code' in error && error.code === 'ENOENT';

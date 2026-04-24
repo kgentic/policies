@@ -28,7 +28,7 @@ import {
   type EngineRule,
   type EngineRulepack,
   type PolicyHook,
-} from '@kgentic/policies-shared';
+} from '@kgentic-ai/policies-shared';
 
 type ToolResult = {
   isError?: boolean;
