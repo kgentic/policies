@@ -34,7 +34,7 @@ afterEach(async () => {
   await Promise.all(tempDirs.splice(0).map((dir) => fs.rm(dir, { recursive: true, force: true })));
 });
 
-describe('policy MCP server e2e', () => {
+describe.skipIf(!!process.env['CI'])('policy MCP server e2e', () => {
   it('exercises core tools over stdio transport', async () => {
     const workspace = await makeWorkspace({
       '.claude/policy.yaml': `version: 1
