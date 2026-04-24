@@ -1,6 +1,6 @@
 {
   "name": "@kgentic-ai/policies",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": false,
   "description": "CLI for managing AI coding agent policies",
   "type": "module",
@@ -8,7 +8,9 @@
   "bin": {
     "policies": "./dist/index.js"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",

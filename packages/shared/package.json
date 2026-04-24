@@ -1,6 +1,6 @@
 {
   "name": "@kgentic-ai/policies-shared",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": false,
   "description": "Shared types and utilities for kgentic policies",
   "type": "module",
@@ -12,7 +12,9 @@
       "types": "./dist/index.d.ts"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
