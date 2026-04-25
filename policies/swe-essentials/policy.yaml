@@ -1,20 +1,92 @@
-name: swe-essentials
-version: 1.2.0
+id: swe-essentials
+name: SWE Essentials
 description: Core software engineering principles — design, discipline, testing, error handling, security
 tags: [quality, swe, universal]
-rules:
-  - id: design
-    path: design.md
-    description: Design principles
-  - id: code-discipline
-    path: code-discipline.md
-    description: Code discipline and consistency
-  - id: testing
-    path: testing.md
-    description: Testing practices
-  - id: error-handling
-    path: error-handling.md
-    description: Error handling patterns
-  - id: security
-    path: security.md
-    description: Security fundamentals
+version: 1.2.0
+policies:
+  - id: swe-essentials/design
+    file: design.md
+    level: advisory
+    tags: [design, quality]
+    hooks:
+      - id: inject-swe-session-start-design
+        event: SessionStart
+        matcher: "*"
+        mode: inject
+        when: {}
+      - id: inject-swe-design
+        event: PreToolUse
+        matcher: "Write|Edit|MultiEdit"
+        mode: inject
+        when:
+          paths: ["src/**", "lib/**"]
+  - id: swe-essentials/code-discipline
+    file: code-discipline.md
+    level: advisory
+    tags: [discipline, quality]
+    hooks:
+      - id: inject-swe-session-start-discipline
+        event: SessionStart
+        matcher: "*"
+        mode: inject
+        when: {}
+      - id: inject-swe-discipline
+        event: PreToolUse
+        matcher: "Write|Edit|MultiEdit"
+        mode: inject
+        when:
+          paths: ["src/**", "lib/**"]
+  - id: swe-essentials/testing
+    file: testing.md
+    level: advisory
+    tags: [testing, quality]
+    hooks:
+      - id: inject-swe-session-start-testing
+        event: SessionStart
+        matcher: "*"
+        mode: inject
+        when: {}
+      - id: inject-swe-testing
+        event: PreToolUse
+        matcher: "Write|Edit|MultiEdit"
+        mode: inject
+        when:
+          paths: ["**/*.test.*", "**/*.spec.*", "tests/**"]
+  - id: swe-essentials/error-handling
+    file: error-handling.md
+    level: advisory
+    tags: [errors, quality]
+    hooks:
+      - id: inject-swe-session-start-error-handling
+        event: SessionStart
+        matcher: "*"
+        mode: inject
+        when: {}
+      - id: inject-swe-error-handling
+        event: PreToolUse
+        matcher: "Write|Edit|MultiEdit"
+        mode: inject
+        when:
+          paths: ["src/**"]
+  - id: swe-essentials/security
+    file: security.md
+    level: advisory
+    tags: [security, quality]
+    hooks:
+      - id: inject-swe-session-start-security
+        event: SessionStart
+        matcher: "*"
+        mode: inject
+        when: {}
+      - id: inject-swe-security-commands
+        event: PreToolUse
+        matcher: "Bash"
+        mode: inject
+        when:
+          commands: ["curl*", "wget*", "npm publish*"]
+      - id: inject-swe-security-paths
+        event: PreToolUse
+        matcher: "Write|Edit|MultiEdit"
+        mode: inject
+        when:
+          paths: [".env*", "**/*.pem", "**/*.key"]
