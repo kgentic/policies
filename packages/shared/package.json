@@ -1,6 +1,6 @@
 {
   "name": "@kgentic-ai/policies-shared",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": false,
   "description": "Shared types and utilities for kgentic policies",
   "type": "module",

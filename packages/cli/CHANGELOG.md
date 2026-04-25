@@ -1,5 +1,16 @@
 # @kgentic-ai/policies
 
+## 0.4.0
+
+### Minor Changes
+
+- 446861d: feat: accept v2 policy manifest format (policies array with inline hooks)
+
+### Patch Changes
+
+- Updated dependencies [446861d]
+  - @kgentic-ai/policies-shared@0.3.0
+
 ## 0.3.0
 
 ### Minor Changes

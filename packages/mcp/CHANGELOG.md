@@ -1,5 +1,12 @@
 # @kgentic-ai/policies-mcp
 
+## 0.2.1
+
+### Patch Changes
+
+- Updated dependencies [446861d]
+  - @kgentic-ai/policies-shared@0.3.0
+
 ## 0.2.0
 
 ### Minor Changes
