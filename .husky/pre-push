@@ -1,48 +1,86 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 set -eu
 
-# Recursion guard — prevents re-entry when `gah push` pushes
-if [ "${GAH_ACTIVE:-}" = "yes" ]; then
-  exit 0
+REMOTE="$1"
+NEEDS_REPUSH=0
+
+# ── Recursion guards ──────────────────────────────────────────────────────────
+# Changeset re-push sets KGENTIC_RELEASING; gah sets GAH_ACTIVE.
+if [ "${KGENTIC_RELEASING:-}" = "1" ]; then exit 0; fi
+if [ "${GAH_ACTIVE:-}" = "yes" ]; then exit 0; fi
+
+# ── 1. Changeset auto-release ────────────────────────────────────────────────
+# If pending changeset files exist, run `pnpm release` to consume them,
+# stage the resulting version bumps + CHANGELOGs, and commit. The push is
+# deferred — either gah handles it (section 2) or we do it ourselves (section 3).
+PENDING=$(find .changeset -name '*.md' ! -name 'README.md' 2>/dev/null | head -1)
+
+if [ -n "$PENDING" ]; then
+  echo ""
+  echo "📦 Pending changesets detected — running release..."
+  echo ""
+
+  if ! pnpm release; then
+    echo ""
+    echo "❌ pnpm release failed. Push aborted."
+    exit 1
+  fi
+
+  RELEASE_CHANGES=$(git status --porcelain 2>/dev/null | head -1)
+
+  if [ -n "$RELEASE_CHANGES" ]; then
+    # Stage all release artifacts (suppress errors for files that don't exist)
+    git add \
+      .changeset/ \
+      packages/*/package.json \
+      packages/*/CHANGELOG.md \
+      2>/dev/null
+
+    STAGED=$(git diff --cached --name-only 2>/dev/null | head -1)
+
+    if [ -n "$STAGED" ]; then
+      git commit --no-verify -m "chore(release): bump plugin versions"
+      NEEDS_REPUSH=1
+    fi
+  fi
 fi
 
-# Opt-in check — .gahrc must exist (cosmiconfig config = opt-in signal)
-if [ ! -f ".gahrc" ] && [ ! -f ".gahrc.json" ] && [ ! -f ".gahrc.yaml" ] && [ ! -f ".gahrc.yml" ]; then
-  exit 0
+# ── 2. Git-after-hours (gah) ─────────────────────────────────────────────────
+# Opt-in: requires .gahrc to exist
+GAH_ACTIVE_REPO=0
+if [ -f ".gahrc" ] || [ -f ".gahrc.json" ] || [ -f ".gahrc.yaml" ] || [ -f ".gahrc.yml" ]; then
+  GAH_ACTIVE_REPO=1
+
+  # Block during work hours if configured
+  BLOCK_CHECK=$(gah check-hours 2>&1) || true
+  if echo "$BLOCK_CHECK" | grep -q "BLOCKED"; then
+    echo "$BLOCK_CHECK" | grep -v "BLOCKED"
+    exit 1
+  fi
+
+  # Check for unpushed work-hour commits (includes any release commit from above)
+  OUTPUT=$(gah --unpushed --dry-run 2>&1) || true
+
+  if ! echo "$OUTPUT" | grep -q "commits to modify: 0"; then
+    BRANCH=$(git branch --show-current)
+    echo "gah: work-hour commits detected — rewriting before push"
+    gah push --branch "$BRANCH"
+
+    echo ""
+    echo "✓ gah: push complete (timestamps shifted to outside work hours)"
+    # gah already pushed everything (including any release commit) — abort original
+    exit 1
+  fi
 fi
 
-# Delegate to `gah push` which handles rewrite + push in one step.
-# `gah push` sets GAH_ACTIVE=yes before its own push, so this hook
-# will skip on re-entry (recursion guard above).
-#
-# If gah push succeeds, we exit 1 to abort the original push (git
-# caches local refs before hooks, so the original would push stale SHAs).
-# If nothing needed rewriting, we exit 0 to let git push normally.
-
-BRANCH=$(git branch --show-current)
-
-# Check if push should be blocked during work hours
-BLOCK_CHECK=$(gah check-hours 2>&1) || true
-if echo "$BLOCK_CHECK" | grep -q "BLOCKED"; then
-  echo "$BLOCK_CHECK" | grep -v "BLOCKED"
-  exit 1
+# ── 3. Re-push if release created a new commit but gah didn't push ───────────
+# The original push was computed before the hook ran, so it doesn't know about
+# the release commit. We need to push explicitly.
+if [ "$NEEDS_REPUSH" = "1" ]; then
+  echo ""
+  echo "📤 Pushing with release commit included..."
+  KGENTIC_RELEASING=1 git push "$REMOTE" HEAD 2>&1
+  echo "✅ Release committed and pushed."
 fi
 
-# Quick check: any unpushed work-hour commits?
-OUTPUT=$(gah --unpushed --dry-run 2>&1) || true
-
-if echo "$OUTPUT" | grep -q "commits to modify: 0"; then
-  # Nothing to rewrite — let the original push proceed
-  exit 0
-fi
-
-# Work-hour commits found — hand off to `gah push`
-echo "gah: work-hour commits detected — rewriting before push"
-gah push --branch "$BRANCH"
-
-echo ""
-echo "✓ gah: push complete (timestamps shifted to outside work hours)"
-echo "ℹ gah: exit 1 is expected — original push replaced by gah push"
-
-# Abort the original push — gah push already landed the rewritten version.
-exit 1
+exit 0
