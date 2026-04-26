@@ -53,4 +53,9 @@ jobs:
         env:
           HUSKY: '0'
 
-      # No npm publish — all packages are private (distributed via git/marketplace)
+      - run: pnpm build
+
+      - name: Publish to npm
+        run: pnpm changeset publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
