@@ -1,6 +1,10 @@
 # @kgentic-ai/policies-plugin-claude
 
-## 0.4.1
+## 0.5.0
+
+### Minor Changes
+
+- 84d66c7: feat: add code-review policy pack with retrieve-enabled advisory guidance
 
 ### Patch Changes
 
