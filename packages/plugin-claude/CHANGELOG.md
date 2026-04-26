@@ -1,5 +1,11 @@
 # @kgentic-ai/policies-plugin-claude
 
+## 0.4.0
+
+### Minor Changes
+
+- 78fb328: feat: migrate CC integration layer — hooks, skills, packs, templates, CLAUDE.md
+
 ## 0.3.0
 
 ### Minor Changes
