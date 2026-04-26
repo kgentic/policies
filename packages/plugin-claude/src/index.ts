@@ -1,5 +1,5 @@
 // Claude Code policy enforcement plugin — hook runner and MCP tools
-export { runHook } from './runner.js';
+export { runHook } from './hooks/runner.js';
 export { startHttpBridge } from './mcp/http-bridge.js';
 export type { HttpBridge, HttpBridgeOptions } from './mcp/http-bridge.js';
 export {

@@ -2,7 +2,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { promises as fs } from 'node:fs';
 import { afterEach, describe, expect, it } from 'vitest';
-import { runHook } from './runner.js';
+import { runHook } from './hooks/runner.js';
 import { loadPolicyManifestFromDir } from '@kgentic-ai/policies-shared';
 
 const tempDirs: string[] = [];

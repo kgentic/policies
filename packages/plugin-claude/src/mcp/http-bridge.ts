@@ -2,7 +2,7 @@ import http from 'node:http';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { promises as fs } from 'node:fs';
-import { runHook } from '../runner.js';
+import { runHook } from '../hooks/runner.js';
 import {
   loadPolicyManifestFromDir,
   discoverPolicyManifestPath,
