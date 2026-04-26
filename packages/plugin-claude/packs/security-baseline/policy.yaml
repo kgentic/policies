@@ -1,0 +1,86 @@
+id: security-baseline
+name: Security Baseline
+description: Security-focused rules for code review — secrets hygiene, injection prevention, auth checks, dependency hygiene, and error exposure
+tags: [security, baseline, universal]
+version: 1.0.0
+policies:
+  - id: security-baseline/secrets-detection
+    file: secrets-detection.md
+    level: guardrail
+    tags: [secrets, security]
+    hooks:
+      - id: inject-security-session-start-secrets
+        event: SessionStart
+        matcher: "*"
+        mode: inject
+        when: {}
+      - id: inject-security-secrets
+        event: PreToolUse
+        matcher: "Write|Edit|MultiEdit"
+        mode: inject
+        when:
+          paths: [".env*", "**/*.yaml", "**/*.yml", "**/*.json", "**/*.toml", "**/*.config.*"]
+  - id: security-baseline/injection-prevention
+    file: injection-prevention.md
+    level: guardrail
+    tags: [injection, security]
+    hooks:
+      - id: inject-security-session-start-injection
+        event: SessionStart
+        matcher: "*"
+        mode: inject
+        when: {}
+      - id: inject-security-injection
+        event: PreToolUse
+        matcher: "Write|Edit|MultiEdit"
+        mode: inject
+        when:
+          paths: ["src/**", "lib/**", "app/**"]
+  - id: security-baseline/auth-checks
+    file: auth-checks.md
+    level: guardrail
+    tags: [auth, security]
+    hooks:
+      - id: inject-security-session-start-auth
+        event: SessionStart
+        matcher: "*"
+        mode: inject
+        when: {}
+      - id: inject-security-auth
+        event: PreToolUse
+        matcher: "Write|Edit|MultiEdit"
+        mode: inject
+        when:
+          paths: ["src/**/*auth*", "src/**/*login*", "src/**/*session*", "src/**/*token*", "src/**/*middleware*"]
+  - id: security-baseline/dependency-hygiene
+    file: dependency-hygiene.md
+    level: advisory
+    tags: [dependencies, security]
+    hooks:
+      - id: inject-security-session-start-deps
+        event: SessionStart
+        matcher: "*"
+        mode: inject
+        when: {}
+      - id: inject-security-deps
+        event: PreToolUse
+        matcher: "Bash"
+        mode: inject
+        when:
+          commands: ["npm install*", "pnpm add*", "yarn add*", "pip install*", "npm audit*", "pnpm audit*"]
+  - id: security-baseline/error-exposure
+    file: error-exposure.md
+    level: advisory
+    tags: [errors, security]
+    hooks:
+      - id: inject-security-session-start-errors
+        event: SessionStart
+        matcher: "*"
+        mode: inject
+        when: {}
+      - id: inject-security-errors
+        event: PreToolUse
+        matcher: "Write|Edit|MultiEdit"
+        mode: inject
+        when:
+          paths: ["src/**/*error*", "src/**/*handler*", "src/**/*middleware*", "src/**/*route*", "src/**/*controller*"]

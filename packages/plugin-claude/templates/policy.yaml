@@ -1,0 +1,45 @@
+version: 1
+
+governance:
+  allow_llm_updates:
+    - advisory
+  require_approval_for:
+    - guardrail
+    - enforcement
+
+policies:
+  - id: shell-safety
+    level: guardrail
+    file: ./policies/shell-safety.md
+    tags: [bash, shell, risk]
+
+  - id: protected-files
+    level: enforcement
+    file: ./policies/protected-files.md
+    tags: [write, edit, protected]
+
+hooks:
+  - id: pretool-bash-safety
+    event: PreToolUse
+    matcher: Bash
+    mode: decide
+    decision: ask
+    use:
+      - shell-safety
+    when:
+      commands:
+        - "git push *"
+        - "rm *"
+        - "pnpm add *"
+
+  - id: pretool-write-protected
+    event: PreToolUse
+    matcher: Write|Edit|MultiEdit|NotebookEdit
+    mode: decide
+    decision: ask
+    use:
+      - protected-files
+    when:
+      paths:
+        - "src/**"
+        - "package.json"
