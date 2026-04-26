@@ -24,18 +24,26 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-          registry-url: https://registry.npmjs.org
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm build
+      # Only version if pending changesets exist (pre-push hook usually handles this)
+      - name: Check for pending changesets
+        id: check
+        run: |
+          PENDING=$(find .changeset -name '*.md' ! -name 'README.md' 2>/dev/null | head -1)
+          if [ -n "$PENDING" ]; then
+            echo "pending=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "pending=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Version packages
+        if: steps.check.outputs.pending == 'true'
         run: pnpm changeset version
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Commit version bumps
+        if: steps.check.outputs.pending == 'true'
         run: |
           git config user.name "kgentic-dev"
           git config user.email "support@kgentic.ai"
@@ -45,7 +53,4 @@ jobs:
         env:
           HUSKY: '0'
 
-      - name: Publish to npm
-        run: pnpm changeset publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # No npm publish — all packages are private (distributed via git/marketplace)
