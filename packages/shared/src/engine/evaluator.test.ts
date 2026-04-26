@@ -513,6 +513,44 @@ hooks:
     expect(result.hookId).toBe('org-level-deny');
   });
 
+  it('matchedFiles are relative to options.workspaceRoot when provided', async () => {
+    const workspace = await makeWorkspace({
+      'policy.yaml': `version: 1
+rules:
+  - id: protected-files
+    level: enforcement
+    file: ./rules/protected-files.md
+hooks:
+  - id: protected-write
+    event: PreToolUse
+    matcher: Write|Edit
+    mode: decide
+    decision: ask
+    use: [protected-files]
+    when:
+      paths: ["src/**"]
+`,
+      'rules/protected-files.md': 'Protected files require review.\n',
+    });
+
+    const loaded = await loadPolicyManifest(path.join(workspace, 'policy.yaml'));
+    const result = evaluatePolicy(
+      loaded,
+      {
+        event: 'PreToolUse',
+        toolName: 'Write',
+        path: 'src/index.ts',
+      },
+      { workspaceRoot: workspace },
+    );
+
+    expect(result.matched).toBe(true);
+    // matchedFiles paths must be relative to the provided workspace root
+    for (const file of result.matchedFiles) {
+      expect(path.isAbsolute(file)).toBe(false);
+    }
+  });
+
   it('defaults to allow when no hook matches', async () => {
     const workspace = await makeWorkspace({
       'policy.yaml': `version: 1

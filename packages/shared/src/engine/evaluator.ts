@@ -130,6 +130,7 @@ function decisionSeverity(decision: string): number {
 export function evaluatePolicy(
   loaded: ResolvedManifest,
   input: PolicyEvaluationInput,
+  options?: { workspaceRoot?: string },
 ): PolicyEvaluationResult {
   const resolvedManifest = path.resolve(loaded.manifestPath);
   const manifestDir = path.dirname(resolvedManifest);
@@ -205,7 +206,7 @@ export function evaluatePolicy(
 
   const allMatchedFiles = [...new Set(
     matched.flatMap((m) => getAssetFilesForHook(m.hook, loaded.assets)),
-  )].map((file) => path.relative(process.cwd(), file));
+  )].map((file) => path.relative(options?.workspaceRoot ?? process.cwd(), file));
 
   const allHookIds = matched.map((m) => m.hook.id).filter((id): id is string => id !== undefined);
 

@@ -7,8 +7,10 @@ import {
   evaluatePolicyTool,
   getPolicyManifestTool,
   installRulepackToolRegistration,
+  setWorkspaceRoot,
   updateRulepacksTool,
 } from './tools.js';
+import { WorkspaceContext } from './workspace-context.js';
 import { startHttpBridge } from './http-bridge.js';
 import type { HttpBridge } from './http-bridge.js';
 
@@ -121,7 +123,11 @@ async function main(): Promise<void> {
   const transport = new StdioServerTransport();
   await server.connect(transport);
 
-  bridge = await startHttpBridge({ workspaceRoot: process.cwd() });
+  const ctx = new WorkspaceContext(process.cwd());
+  await ctx.resolveFromMcpRoots(server.server);
+  setWorkspaceRoot(ctx.workspaceRoot);
+
+  bridge = await startHttpBridge({ workspaceRoot: ctx.workspaceRoot });
   process.stderr.write(`[policy-mcp] HTTP bridge listening on port ${bridge.port}\n`);
 
   const shutdown = async (): Promise<void> => {

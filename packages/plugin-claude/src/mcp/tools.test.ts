@@ -14,6 +14,7 @@ import {
   listPolicyTemplatesTool,
   proposePolicyRuleTool,
   searchPoliciesTool,
+  setWorkspaceRoot,
   validatePolicyPackTool,
 } from './tools.js';
 
@@ -455,6 +456,7 @@ hooks: []
   describe('cosmiconfig auto-discovery', () => {
     afterEach(() => {
       vi.restoreAllMocks();
+      setWorkspaceRoot(process.cwd());
     });
 
     it('read tools auto-discover policy.yaml at project root', async () => {
@@ -469,7 +471,7 @@ hooks: []
         'rules/test.md': 'Test rule.\n',
       });
 
-      vi.spyOn(process, 'cwd').mockReturnValue(workspace);
+      setWorkspaceRoot(workspace);
 
       const result = await validatePolicyPackTool.execute({});
       const parsed = parseText(result) as { ok: boolean };
@@ -488,7 +490,7 @@ hooks: []
         'rules/test.md': 'Test rule.\n',
       });
 
-      vi.spyOn(process, 'cwd').mockReturnValue(workspace);
+      setWorkspaceRoot(workspace);
 
       const result = await getPolicyManifestTool.execute({});
       const parsed = parseText(result) as { ok: boolean; manifest: { version: number } };
@@ -499,7 +501,7 @@ hooks: []
     it('read tools return error when no manifest is found', async () => {
       const workspace = await makeWorkspace({});
 
-      vi.spyOn(process, 'cwd').mockReturnValue(workspace);
+      setWorkspaceRoot(workspace);
 
       const result = await evaluatePolicyTool.execute({
         event: 'PreToolUse',
@@ -514,7 +516,7 @@ hooks: []
     it('apply_policy_change defaults to .claude/policy.yaml when no manifest exists', async () => {
       const workspace = await makeWorkspace({});
 
-      vi.spyOn(process, 'cwd').mockReturnValue(workspace);
+      setWorkspaceRoot(workspace);
 
       const result = await applyPolicyChangeTool.execute({
         manifest: {
@@ -560,7 +562,7 @@ hooks:
         'rules/shell-safety.md': 'Review destructive commands.\n',
       });
 
-      vi.spyOn(process, 'cwd').mockReturnValue(workspace);
+      setWorkspaceRoot(workspace);
 
       const result = await evaluatePolicyTool.execute({
         event: 'PreToolUse',
@@ -598,7 +600,7 @@ hooks:
         'rules/secrets.md': 'Do not write secrets.\n',
       });
 
-      vi.spyOn(process, 'cwd').mockReturnValue(workspace);
+      setWorkspaceRoot(workspace);
 
       const result = await explainPolicyDecisionTool.execute({
         event: 'PreToolUse',
@@ -638,7 +640,7 @@ hooks:
         'rules/git.md': 'Never force push to main branch.\n',
       });
 
-      vi.spyOn(process, 'cwd').mockReturnValue(workspace);
+      setWorkspaceRoot(workspace);
 
       const result = await searchPoliciesTool.execute({
         query: 'force push main',
@@ -673,7 +675,7 @@ hooks: []
         'rules/custom.md': 'Custom rule.\n',
       });
 
-      vi.spyOn(process, 'cwd').mockReturnValue(workspace);
+      setWorkspaceRoot(workspace);
 
       const result = await listPolicyAssetsTool.execute({
         manifestPath: path.join(workspace, 'custom/my-policy.yaml'),
@@ -685,6 +687,60 @@ hooks: []
       };
       expect(parsed.ok).toBe(true);
       expect(parsed.assets[0]?.id).toBe('custom-rule');
+    });
+  });
+
+  describe('setWorkspaceRoot', () => {
+    afterEach(() => {
+      // Reset to process.cwd() after each test so other tests aren't affected
+      setWorkspaceRoot(process.cwd());
+    });
+
+    it('setWorkspaceRoot affects resolveManifestPath auto-discovery', async () => {
+      const workspace = await makeWorkspace({
+        'policy.yaml': `version: 1
+rules:
+  - id: workspace-rule
+    level: advisory
+    file: ./rules/workspace-rule.md
+hooks: []
+`,
+        'rules/workspace-rule.md': 'Workspace rule content.\n',
+      });
+
+      setWorkspaceRoot(workspace);
+
+      const result = await validatePolicyPackTool.execute({});
+      const parsed = parseText(result) as { ok: boolean };
+      expect(parsed.ok).toBe(true);
+    });
+
+    it('setWorkspaceRoot affects resolveManifestPathForWrite default path', async () => {
+      const workspace = await makeWorkspace({});
+
+      setWorkspaceRoot(workspace);
+
+      const result = await applyPolicyChangeTool.execute({
+        manifest: {
+          version: 1,
+          governance: {
+            allow_llm_updates: ['advisory'],
+            require_approval_for: ['guardrail', 'enforcement'],
+            approval_ttl_minutes: 30,
+          },
+          rules: [],
+          rulepacks: [],
+          hooks: [],
+        },
+        ruleFiles: [],
+        approvalConfirmed: false,
+      });
+
+      const parsed = parseText(result) as { ok: boolean; manifestPath: string };
+      expect(parsed.ok).toBe(true);
+      // Written to the injected workspace root, not process.cwd()
+      expect(parsed.manifestPath).toContain(workspace);
+      expect(parsed.manifestPath).toContain('.claude/policy.yaml');
     });
   });
 

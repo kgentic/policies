@@ -35,6 +35,12 @@ type ToolResult = {
   content: Array<{ type: 'text'; text: string }>;
 };
 
+let _workspaceRoot: string = process.cwd();
+
+export function setWorkspaceRoot(root: string): void {
+  _workspaceRoot = root;
+}
+
 function textResult(payload: unknown): ToolResult {
   return {
     content: [{ type: 'text', text: JSON.stringify(payload) }],
@@ -49,7 +55,7 @@ const DEFAULT_MANIFEST_PATH = '.claude/policy.yaml';
 
 async function resolveManifestPath(explicit?: string): Promise<string> {
   if (explicit) return explicit;
-  const discovered = await discoverPolicyManifestPath(process.cwd());
+  const discovered = await discoverPolicyManifestPath(_workspaceRoot);
   if (discovered) return discovered;
   throw new Error(
     'No policy manifest found. Searched: policy.yaml, .claude/policy.yaml, .config/policy.yaml and variants. ' +
@@ -59,9 +65,9 @@ async function resolveManifestPath(explicit?: string): Promise<string> {
 
 async function resolveManifestPathForWrite(explicit?: string): Promise<string> {
   if (explicit) return explicit;
-  const discovered = await discoverPolicyManifestPath(process.cwd());
+  const discovered = await discoverPolicyManifestPath(_workspaceRoot);
   if (discovered) return discovered;
-  return path.join(process.cwd(), DEFAULT_MANIFEST_PATH);
+  return path.join(_workspaceRoot, DEFAULT_MANIFEST_PATH);
 }
 
 async function resolveManifestPathForScope(scope: 'user' | 'project', explicit?: string): Promise<string> {
