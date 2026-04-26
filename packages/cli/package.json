@@ -1,6 +1,6 @@
 {
   "name": "@kgentic-ai/policies",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "private": false,
   "description": "CLI for managing AI coding agent policies",
   "type": "module",
