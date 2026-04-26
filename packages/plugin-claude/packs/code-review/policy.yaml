@@ -1,0 +1,17 @@
+version: 1
+rules:
+  - id: code-review-guidance
+    level: advisory
+    file: ./review-guidance.md
+hooks:
+  - id: code-review-on-edit
+    event: PreToolUse
+    matcher: "Edit|Write|MultiEdit"
+    mode: inject
+    use: [code-review-guidance]
+    when:
+      tools: ["Edit", "Write", "MultiEdit"]
+    retrieve:
+      enabled: true
+      strategy: fts
+      top_k: 3
