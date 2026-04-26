@@ -1,5 +1,5 @@
 {
-  "name": "policies-plugin-claude",
+  "name": "policy",
   "version": "0.5.0",
   "description": "Claude Code plugin for policy enforcement — hook runners and MCP tools backed by @kgentic-ai/policies-shared.",
   "author": {
