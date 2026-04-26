@@ -11,7 +11,8 @@
     "lint": "turbo lint",
     "test": "turbo test",
     "changeset": "changeset",
-    "release": "changeset version",
+    "sync-versions": "node scripts/sync-plugin-versions.js",
+    "release": "changeset version && node scripts/sync-plugin-versions.js",
     "prepare": "husky"
   },
   "engines": {

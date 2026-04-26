@@ -9,11 +9,17 @@
       "name": "policy",
       "source": "./packages/plugin-claude",
       "description": "Policy enforcement engine for Claude Code — hook-based rule evaluation, approval tracking, and MCP tools",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "author": {
         "name": "kgentic"
       },
-      "keywords": ["policy", "guardrails", "governance", "hooks", "enforcement"]
+      "keywords": [
+        "policy",
+        "guardrails",
+        "governance",
+        "hooks",
+        "enforcement"
+      ]
     }
   ]
 }
