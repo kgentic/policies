@@ -1,5 +1,11 @@
 # @kgentic-ai/policies-plugin-claude
 
+## 0.5.2
+
+### Patch Changes
+
+- 0184289: fix: add missing .mcp.json — MCP server wasn't starting without it
+
 ## 0.5.1
 
 ### Patch Changes
