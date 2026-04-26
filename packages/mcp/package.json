@@ -1,7 +1,7 @@
 {
   "name": "@kgentic-ai/policies-mcp",
   "version": "0.2.2",
-  "private": false,
+  "private": true,
   "description": "MCP server for AI coding agent policies",
   "type": "module",
   "main": "./dist/index.js",
