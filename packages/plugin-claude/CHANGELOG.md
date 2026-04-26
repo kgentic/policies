@@ -1,5 +1,11 @@
 # @kgentic-ai/policies-plugin-claude
 
+## 0.5.1
+
+### Patch Changes
+
+- c2fabd8: fix: align plugin.json name with marketplace entry to resolve CC lookup error
+
 ## 0.5.0
 
 ### Minor Changes

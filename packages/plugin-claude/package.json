@@ -1,6 +1,6 @@
 {
   "name": "@kgentic-ai/policies-plugin-claude",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "private": true,
   "description": "Claude Code plugin for policy enforcement",
   "type": "module",
