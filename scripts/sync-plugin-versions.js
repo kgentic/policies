@@ -16,7 +16,7 @@ const PLUGINS = [
   { name: 'policy', pkgDir: 'packages/plugin-claude' },
 ];
 
-const MARKETPLACE_PATH = join(ROOT, 'marketplace.json');
+const MARKETPLACE_PATH = join(ROOT, '.claude-plugin', 'marketplace.json');
 
 let changed = false;
 
