@@ -1,5 +1,11 @@
 # @kgentic-ai/policies-plugin-claude
 
+## 0.4.1
+
+### Patch Changes
+
+- 5adb51e: fix: move runner.ts to src/hooks/ so dist output matches shell script paths
+
 ## 0.4.0
 
 ### Minor Changes
