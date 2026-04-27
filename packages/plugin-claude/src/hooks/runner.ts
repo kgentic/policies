@@ -247,6 +247,7 @@ export async function runHook(
       if (mode === 'pre-tool') {
         return JSON.stringify(ClaudePreToolUseResponseSchema.parse({
           hookSpecificOutput: {
+            hookEventName: 'PreToolUse' as const,
             permissionDecision: 'allow',
           },
         }));
@@ -267,6 +268,7 @@ export async function runHook(
     if (mode === 'pre-tool') {
       return JSON.stringify(ClaudePreToolUseResponseSchema.parse({
         hookSpecificOutput: {
+          hookEventName: 'PreToolUse' as const,
           permissionDecision: 'allow',
           additionalContext: `Policy warning: ${message}`,
         },
