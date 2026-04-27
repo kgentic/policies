@@ -1,15 +1,56 @@
 # @kgentic-ai/policies
 
-Policy registry and enforcement engine for AI coding agents. Install curated rule packs into Claude Code, Cursor, Windsurf, or any AI coding tool — like ESLint for AI behavior.
+Policy engine for AI coding agents. Define rules in YAML, enforce via hooks, manage with CLI or MCP tools. Like ESLint for AI behavior.
 
-## Quick Start
+## What It Does
+
+Policies are YAML-defined rules that govern what an AI coding agent can and can't do. They fire on specific events (before a tool runs, when a session starts, before the agent stops) and either:
+
+- **Inject** advisory guidance into the agent's context
+- **Decide** whether to allow, deny, or ask about an action
+- **Audit** actions for logging without blocking
+
+Rules are markdown files — the engine evaluates when to fire them, the markdown content tells the agent what to do.
+
+## Quick Start — Claude Code Plugin
+
+### 1. Install the plugin
+
+Add the `kgentic-policies` marketplace to Claude Code, then install the `policy` plugin via `/plugin`.
+
+### 2. Initialize a policy manifest
+
+```
+/policy-init
+```
+
+Creates `.claude/policy.yaml` with default governance settings.
+
+### 3. Install a policy pack
+
+```
+/policy-add
+```
+
+Lists available packs. Select one to install. Or install directly:
+
+```
+/policy-add code-review
+```
+
+### 4. Verify
+
+```
+/policy-list
+```
+
+Shows installed rules, hooks, and file paths.
+
+## Quick Start — CLI
 
 ```bash
-# Install a policy pack from a GitHub repo
+# Install a policy pack from GitHub
 npx @kgentic-ai/policies add kgentic/policies swe-essentials
-
-# Install from a local directory
-npx @kgentic-ai/policies add ./path/to/repo swe-essentials
 
 # List installed policies
 npx @kgentic-ai/policies list
@@ -18,174 +59,209 @@ npx @kgentic-ai/policies list
 npx @kgentic-ai/policies remove swe-essentials
 ```
 
-## How It Works
-
-Policies are collections of rule files (markdown) that get installed into your AI coding tool's configuration directory. For Claude Code, rules go into `.claude/rules/<policy-name>/`.
-
-```
-your-project/
-├── .claude/
-│   └── rules/
-│       └── swe-essentials/       ← installed by policies CLI
-│           ├── design.md
-│           ├── code-discipline.md
-│           ├── testing.md
-│           ├── error-handling.md
-│           └── security.md
-└── policies.lock.json            ← tracks what's installed
-```
-
-## CLI Reference
-
-```
-Usage: policies <command> [options]
-
-Commands:
-  add <source> <policy-name>   Install a policy
-  list                         List installed policies
-  remove <policy-name>         Remove an installed policy
-
-Options:
-  --client <name>              Target client (claude|cursor|windsurf, default: claude)
-  --ref <ref>                  Git ref (branch/tag/sha, overrides #ref in source)
-  --global, -g                 Install to global scope (~/.config/kgentic/)
-```
-
-### Sources
-
-The `<source>` argument supports:
-
-| Format | Example | Description |
-|--------|---------|-------------|
-| `owner/repo` | `kgentic/policies` | GitHub repo (fetches from `main`) |
-| `owner/repo#ref` | `kgentic/policies#v1.0` | GitHub repo at specific ref |
-| `/path/to/dir` | `/Users/dev/policies` | Local absolute path |
-| `./relative/path` | `./my-policies` | Local relative path |
-
-### Scopes
-
-- **Project** (default): installs to `.claude/rules/` in the current directory, lockfile at `./policies.lock.json`
-- **Global** (`-g`): installs to `~/.claude/rules/` (user-wide), lockfile at `~/.config/kgentic/policies.lock.json`
+The CLI installs rule files into your AI tool's config directory (e.g., `.claude/rules/<pack>/` for Claude Code).
 
 ## Available Policy Packs
 
+### code-review
+
+Context-aware review guidance injected before every code edit. Uses FTS retrieve to surface only the most relevant sections based on the file being edited.
+
+**Sections:** naming · error handling · security · testing · API contracts · data & storage · dependencies · performance · complexity
+
+**Hook:** `PreToolUse` on `Edit|Write|MultiEdit` with `retrieve: { enabled: true, top_k: 3 }`
+
 ### swe-essentials
 
-Core software engineering principles — design, discipline, testing, error handling, security.
+Core software engineering principles for AI-assisted development.
 
-```bash
-npx @kgentic-ai/policies add kgentic/policies swe-essentials
-```
-
-**Rules:** `design` · `code-discipline` · `testing` · `error-handling` · `security`
+**Rules:** design · code-discipline · testing · error-handling · security
 
 ### security-baseline
 
-Security fundamentals for AI-assisted development.
+Security fundamentals — injection prevention, secrets handling, auth patterns, dependency hygiene.
 
-```bash
-npx @kgentic-ai/policies add kgentic/policies security-baseline
+**Rules:** injection-prevention · secrets-detection · auth-checks · error-exposure · dependency-hygiene
+
+## How Hooks Work
+
+```yaml
+# .claude/policy.yaml
+version: 1
+rules:
+  - id: no-force-push
+    level: enforcement
+    file: ./rules/no-force-push.md
+hooks:
+  - id: block-force-push
+    event: PreToolUse
+    matcher: Bash
+    mode: decide
+    decision: deny
+    use: [no-force-push]
+    when:
+      commands: ["git push --force*", "git push -f*"]
 ```
 
-**Rules:** `input-validation` · `auth-patterns` · `secrets-handling` · `dependency-security` · `owasp-awareness`
+When the agent tries `git push --force`, the hook fires, matches the command pattern, and returns a `deny` decision with the rule content as the reason.
 
-## Creating Your Own Policy Pack
+### Hook Events
 
-A policy pack is a directory with a `policy.yaml` manifest and rule files:
+| Event | When it fires |
+|-------|--------------|
+| `PreToolUse` | Before a tool runs (Edit, Bash, Write, etc.) |
+| `PostToolUse` | After a tool completes |
+| `Stop` | Before the agent finishes |
+| `SubagentStop` | Before a subagent finishes |
+| `SessionStart` | When a session begins |
+| `SessionEnd` | When a session ends |
+| `UserPromptSubmit` | When the user sends a message |
+| `PreCompact` | Before context compaction |
+| `Notification` | On notification events |
+
+### Hook Modes
+
+| Mode | Behavior |
+|------|----------|
+| `inject` | Inject rule content as advisory context — agent sees it but isn't blocked |
+| `decide` | Make an enforcement decision: `allow`, `deny`, `ask`, or `block` |
+| `audit` | Log the action without blocking or injecting |
+
+### Filtering with `when`
+
+```yaml
+when:
+  tools: ["Bash", "Edit"]              # which tools trigger this hook
+  commands: ["rm -rf*", "drop table*"] # shell command patterns (glob)
+  paths: ["src/auth/**", ".env*"]      # file path patterns (glob)
+```
+
+All conditions are AND'd. Omitted conditions match everything.
+
+### Smart Retrieve
+
+For large rule files, enable FTS retrieve to inject only the most relevant sections:
+
+```yaml
+retrieve:
+  enabled: true
+  strategy: fts
+  top_k: 3
+```
+
+The engine tokenizes the evaluation context (tool name, file path, command) and scores each section in the rule markdown. Only the top-k highest-scoring sections are injected — not the entire file.
+
+## Governance
+
+Control which rule levels the AI agent can modify without human approval:
+
+```yaml
+governance:
+  allow_llm_updates: [advisory]           # agent can change advisory rules
+  require_approval_for: [guardrail, enforcement]  # these need human approval
+  approval_ttl_minutes: 30                # approvals expire after 30 min
+```
+
+## Layer Precedence
+
+Policies merge from multiple sources with clear precedence:
+
+1. **User layer** (`~/.claude/policy.yaml`) — baseline defaults
+2. **Installed layers** (`.claude/policies/*/policy.yaml`) — pack-specific rules
+3. **Project layer** (`.claude/policy.yaml`) — project-specific overrides (wins)
+
+Higher precedence layers override lower ones when rules or hooks share the same ID.
+
+## Plugin Skills
+
+| Skill | Purpose |
+|-------|---------|
+| `/policy-init` | Scaffold starter policy.yaml |
+| `/policy-add` | Install a policy pack |
+| `/policy-remove` | Remove an installed pack |
+| `/policy-author` | Author a new rule interactively |
+| `/policy-evaluate` | Test if an action would be blocked |
+| `/policy-explain` | Full decision chain explanation |
+| `/policy-search` | Search rules by keyword |
+| `/policy-list` | List installed policies |
+| `/policy-update` | Check for pack updates |
+
+## MCP Tools
+
+The plugin exposes MCP tools for programmatic access:
+
+| Tool | Purpose |
+|------|---------|
+| `get_policy_manifest` | Read current policy state |
+| `evaluate_policy` | Evaluate a hook decision |
+| `apply_policy_change` | Write policy.yaml atomically |
+| `create_policy_rule` | Create a rule with elicitation |
+| `install_rulepack` | Install a bundled pack |
+| `update_rulepacks` | Check for stale packs |
+
+## Creating Your Own Pack
+
+A pack is a directory with `policy.yaml` + markdown rule files:
 
 ```
-my-policies/
-└── policies/
-    └── my-pack/
-        ├── policy.yaml
-        ├── rule-one.md
-        └── rule-two.md
+my-pack/
+├── policy.yaml
+└── review-rules.md
 ```
 
 ### policy.yaml
 
 ```yaml
-name: my-pack
-version: 1.0.0
-description: My custom policy pack
-tags: [custom]
+version: 1
 rules:
-  - id: rule-one
-    path: rule-one.md
-    description: First rule
-  - id: rule-two
-    path: rule-two.md
-    description: Second rule
+  - id: review-rules
+    level: advisory
+    file: ./review-rules.md
+hooks:
+  - id: review-on-edit
+    event: PreToolUse
+    matcher: "Edit|Write|MultiEdit"
+    mode: inject
+    use: [review-rules]
+    when:
+      tools: ["Edit", "Write", "MultiEdit"]
+    retrieve:
+      enabled: true
+      strategy: fts
+      top_k: 3
 ```
 
 ### Rule files
 
-Rule files are markdown. Their content is injected into the AI agent's context as behavioral guidelines.
+Markdown with `## Headings` and `- bullet` rules. When retrieve is enabled, FTS scores individual sections against the evaluation context.
 
 ```markdown
-# No Force Push
+## Security
+- Never log secrets, tokens, or PII
+- Parameterised queries only
 
-Never use `git push --force`. Use `--force-with-lease` as a safer alternative.
-
-If force push is truly needed, ask the user to run it manually.
+## Testing
+- Every conditional branch must have test coverage
+- Assertions must fail when behaviour is wrong
 ```
-
-### Publishing
-
-Host your policy pack in any GitHub repo. Users install with:
-
-```bash
-npx @kgentic-ai/policies add your-org/your-repo your-pack-name
-```
-
-The CLI fetches `policy.yaml` and rule files from `policies/<pack-name>/` in the repo root.
 
 ## Packages
 
-| Package | npm | Description |
-|---------|-----|-------------|
-| `@kgentic-ai/policies` | [![npm](https://img.shields.io/npm/v/@kgentic-ai/policies)](https://npmjs.com/package/@kgentic-ai/policies) | CLI — add/list/remove policies |
-| `@kgentic-ai/policies-shared` | [![npm](https://img.shields.io/npm/v/@kgentic-ai/policies-shared)](https://npmjs.com/package/@kgentic-ai/policies-shared) | Shared evaluator engine and schemas |
-| `@kgentic-ai/policies-plugin-claude` | [![npm](https://img.shields.io/npm/v/@kgentic-ai/policies-plugin-claude)](https://npmjs.com/package/@kgentic-ai/policies-plugin-claude) | Claude Code plugin — hook enforcement |
-| `@kgentic-ai/policies-mcp` | [![npm](https://img.shields.io/npm/v/@kgentic-ai/policies-mcp)](https://npmjs.com/package/@kgentic-ai/policies-mcp) | MCP server for policy tools |
-
-## Architecture
-
-```
-┌─────────────┐     ┌──────────────────┐     ┌───────────────┐
-│  CLI        │     │  Shared Engine   │     │  Plugin       │
-│  add/list/  │────▶│  Evaluator       │◀────│  Claude Code  │
-│  remove     │     │  Schema/Types    │     │  Cursor       │
-│             │     │  Config Loader   │     │  Windsurf     │
-└─────────────┘     └──────────────────┘     └───────────────┘
-       │                                            │
-       ▼                                            ▼
-  policies.lock.json                     .claude/rules/<pack>/
-  (tracks installed)                     (rule files injected)
-```
-
-The evaluator engine is **client-agnostic** — it takes hook events + rules and returns enforcement decisions. Thin client plugins translate client-specific events (e.g., Claude's `PreToolUse`) into the shared evaluator format.
+| Package | Description |
+|---------|-------------|
+| `@kgentic-ai/policies` | CLI — add/list/remove policies |
+| `@kgentic-ai/policies-shared` | Shared evaluator engine and schemas |
+| `@kgentic-ai/policies-plugin-claude` | Claude Code plugin — hooks + MCP tools |
+| `@kgentic-ai/policies-mcp` | Standalone MCP server |
 
 ## Development
 
 ```bash
-# Install dependencies
 pnpm install
-
-# Build all packages
 pnpm build
-
-# Run tests (203 tests across 4 packages)
-pnpm test
-
-# Typecheck
+pnpm test          # 216 tests across 4 packages
 pnpm typecheck
-
-# Lint
 pnpm lint
-
-# Run CLI in dev mode (no build required)
-cd packages/cli && npx tsx src/index.ts add ./../../ swe-essentials
 ```
 
 ## License
