@@ -1,5 +1,11 @@
 # @kgentic-ai/policies-plugin-claude
 
+## 0.5.3
+
+### Patch Changes
+
+- eb99c82: fix: add missing hookEventName to error-path PreToolUse responses
+
 ## 0.5.2
 
 ### Patch Changes
